@@ -1,4 +1,4 @@
-## ECS162 Homework 3 – Jaden Yang
+## ECS162 Final Project - Group 13
 
 ### Github link: https://github.com/jadenzy/ECS162_HW2.git
 
