@@ -103,7 +103,7 @@
     articles = result.articles;
     fetchError = result.fetchError;
 
-    await loadSection('')
+    await loadSection('Local')
   });
 </script>
 
@@ -115,6 +115,9 @@
   <p class="date time">{today}</p>
   {#if user && !user.error}
     <p>Welcome, {user?.name} | <a href="/logout">Logout</a></p>
+    {#if user.name == 'Publisher'}
+      <!-- show the publisher button  -->
+    {/if}
   {:else}
     <button class="header-button" on:click={handleLogin}>Login</button>
   {/if}
@@ -124,6 +127,7 @@
 
 <nav class="topnav {menuOpen ? 'open' : ''}">
   <ul>
+    <li><a href="#" on:click|preventDefault={() => loadSection('Local')}>Local</a></li>
     <li><a href="#" on:click|preventDefault={() => loadSection('U.S.')}>U.S.</a></li>
     <li><a href="#" on:click|preventDefault={() => loadSection('World')}>World</a></li>
     <li><a href="#" on:click|preventDefault={() => loadSection('Climate')}>Climate</a></li>

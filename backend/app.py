@@ -73,7 +73,7 @@ def get_key():
 def get_articles():
     section = request.args.get("section", "").lower()
     api_key = os.getenv("NYT_API_KEY")
-    if section:
+    if section and section != 'Local':
         fq = f'section.displayName:("{section}")'
         url = (
             "https://api.nytimes.com/svc/search/v2/articlesearch.json"
