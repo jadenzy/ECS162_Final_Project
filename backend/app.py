@@ -186,6 +186,21 @@ def redact_comment():
     )
     return jsonify({'message': 'Redacted'}), 200
 
+# Delete article (moderator only)
+@app.route('/api/article', methods=['DELETE'])
+def delete_article():
+    user_info = session.get('user', {})
+    if not user_info or user_info.get('name') != 'moderator':
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    article_id = request.args.get('article_id', [])
+    result = db.articles.delete_one({'_id':ObjectId(article_id)})
+
+    if not result:
+        return jsonify({'error': 'Comment not found'}), 404
+    
+    return jsonify({'message': 'Article deleted'}), 200
+
 if __name__ == '__main__':
     debug_mode = os.getenv('FLASK_ENV') != 'production'
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)),debug=debug_mode)
