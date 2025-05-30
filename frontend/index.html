@@ -1,13 +1,488 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>The New York Times</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The New York Times Final Project</title>
+</head>
+<body>
+    <header class="header">
+        <div class="header-top">
+            <div class="date">Thursday, May 29, 2025</div>
+            <a href="#" class="logo">The New York Times</a>
+            <div class="user-info">Welcome, admin | <a href="#">Logout</a></div>
+        </div>
+    </header>
+
+    <nav class="nav">
+        <div class="nav-container">
+            <ul>
+                <li><a href="#">Local</a></li>
+                <li><a href="#">U.S.</a></li>
+                <li><a href="#">World</a></li>
+                <li><a href="#">Climate</a></li>
+                <li><a href="#">Arts</a></li>
+                <li><a href="#">Opinion</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Main content goes on here guys -->
+        <main class="main-content">
+            <article class="lead-story">
+                <h1>Global Climate Summit Reaches Historic Agreement on Carbon Reduction</h1>
+                <p class="subtitle">World leaders commit to ambitious new targets as scientists warn of critical tipping points</p>
+                <p class="byline">By Sarah Johnson and Michael Chen</p>
+                <p class="excerpt">
+                    In a groundbreaking development at the Global Climate Summit in Geneva, representatives from 195 nations reached a comprehensive agreement on carbon reduction targets that experts are calling the most ambitious climate accord since the Paris Agreement. The new framework establishes binding commitments for developed nations to achieve net-zero emissions by 2035, five years earlier than previous targets.
+                </p>
+            </article>
+
+            <!-- This is some ransom stuff i added -->
+            <section class="secondary-stories">
+                <article class="story">
+                    <h2>Tech Innovation Drives Economic Growth in Q2</h2>
+                    <p class="byline">By Alexandra Rodriguez</p>
+                    <p class="excerpt">
+                        Artificial intelligence and renewable energy sectors showed remarkable growth this quarter, with tech stocks reaching new highs as investors bet on sustainable innovation. Major companies reported record revenues driven by AI-powered solutions.
+                    </p>
+                </article>
+
+                <article class="story">
+                    <h2>Archaeological Discovery Rewrites Ancient History</h2>
+                    <p class="byline">By Dr. James Thompson</p>
+                    <p class="excerpt">
+                        A team of archaeologists in Peru has uncovered evidence of a previously unknown civilization that predates the Inca Empire by over 1,000 years. The discovery includes sophisticated astronomical instruments and architectural marvels.
+                    </p>
+                </article>
+
+                <article class="story">
+                    <h2>Healthcare Innovation Shows Promise in Cancer Treatment</h2>
+                    <p class="byline">By Dr. Maria Lopez</p>
+                    <p class="excerpt">
+                        Clinical trials for a new immunotherapy treatment have shown unprecedented success rates in treating advanced-stage cancers. The treatment combines AI-designed drugs with personalized medicine approaches.
+                    </p>
+                </article>
+
+                <article class="story">
+                    <h2>Space Mission Captures Stunning Images of Europa</h2>
+                    <p class="byline">By Robert Kim</p>
+                    <p class="excerpt">
+                        NASA's latest probe has transmitted high-resolution images of Jupiter's moon Europa, revealing potential signs of subsurface ocean activity. Scientists are analyzing the data for evidence of microbial life.
+                    </p>
+                </article>
+            </section>
+
+            <!-- This is an opinion section -->
+            <section class="opinion-section">
+                <h3>Opinion</h3>
+                <article class="story">
+                    <h2>The Future of Work in an AI-Driven World</h2>
+                    <p class="byline">By Professor Lisa Wang</p>
+                    <p class="excerpt">
+                        As artificial intelligence continues to reshape industries, we must rethink education and job training to prepare workers for tomorrow's economy. The key lies in embracing human creativity and emotional intelligence.
+                    </p>
+                </article>
+            </section>
+        </main>
+
+        <!-- This one is for the sidebar -->
+        <aside class="sidebar">
+            <section class="sidebar-section">
+                <h3>Most Popular</h3>
+                <article class="sidebar-story">
+                    <h4>Electric Vehicle Sales Surge 40% This Year</h4>
+                    <p class="byline">By Tom Wilson</p>
+                    <p class="excerpt">Consumer adoption accelerates as battery technology improves and charging infrastructure expands nationwide.</p>
+                </article>
+                <article class="sidebar-story">
+                    <h4>Urban Farming Revolution Takes Root in Major Cities</h4>
+                    <p class="byline">By Emma Davis</p>
+                    <p class="excerpt">Vertical farms and rooftop gardens are transforming food production in urban areas worldwide.</p>
+                </article>
+                <article class="sidebar-story">
+                    <h4>Breakthrough in Quantum Computing Achieved</h4>
+                    <p class="byline">By Dr. Kevin Zhang</p>
+                    <p class="excerpt">Scientists demonstrate quantum advantage in solving complex optimization problems.</p>
+                </article>
+            </section>
+
+            <section class="sidebar-section">
+                <h3>World News</h3>
+                <article class="sidebar-story">
+                    <h4>Renewable Energy Milestone Reached in Europe</h4>
+                    <p class="byline">By Sophie Laurent</p>
+                    <p class="excerpt">Wind and solar power now account for over 60% of electricity generation across EU nations.</p>
+                </article>
+                <article class="sidebar-story">
+                    <h4>Cultural Exchange Program Bridges Global Divide</h4>
+                    <p class="byline">By Hassan Ali</p>
+                    <p class="excerpt">International initiative connects students and professionals across continents through digital platforms.</p>
+                </article>
+            </section>
+        </aside>
+    </div>
+
+    <!-- I basically just added bunch of random tags here, we can change it to whatever we want-->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>News</h4>
+                <ul>
+                    <li><a href="#">World</a></li>
+                    <li><a href="#">U.S.</a></li>
+                    <li><a href="#">Politics</a></li>
+                    <li><a href="#">Business</a></li>
+                    <li><a href="#">Technology</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Opinion</h4>
+                <ul>
+                    <li><a href="#">Editorials</a></li>
+                    <li><a href="#">Op-Ed Columnists</a></li>
+                    <li><a href="#">Letters</a></li>
+                    <li><a href="#">Sunday Review</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Arts</h4>
+                <ul>
+                    <li><a href="#">Books</a></li>
+                    <li><a href="#">Movies</a></li>
+                    <li><a href="#">Theater</a></li>
+                    <li><a href="#">Music</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Living</h4>
+                <ul>
+                    <li><a href="#">Health</a></li>
+                    <li><a href="#">Food</a></li>
+                    <li><a href="#">Travel</a></li>
+                    <li><a href="#">Style</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+</body>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+        }
+
+        .header {
+            border-bottom: 1px solid #ddd;
+            padding: 15px 0 10px 0;
+            background-color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-top {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        .date {
+            font-size: 0.8em;
+            color: #666;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .logo {
+            font-size: 2.8em;
+            font-weight: normal;
+            color: #000;
+            text-decoration: none;
+            font-family: 'Old English Text MT', 'Times New Roman', serif;
+            font-style: italic;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .user-info {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .user-info a {
+            color: #326891;
+            text-decoration: underline;
+        }
+
+        .nav {
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        .nav ul {
+            list-style: none;
+            display: inline-flex;
+            gap: 20px;
+            border: 1px solid #ddd;
+            padding: 8px 15px;
+            background-color: #f8f8f8;
+        }
+
+        .nav a {
+            text-decoration: underline;
+            color: #326891;
+            font-size: 0.85em;
+            font-weight: normal;
+            transition: color 0.3s;
+        }
+
+        .nav a:hover {
+            color: #1a4d6b;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+        }
+
+        .main-content {
+            display: grid;
+            gap: 30px;
+        }
+
+        .lead-story {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 30px;
+        }
+
+        .lead-story h1 {
+            font-size: 2.2em;
+            font-weight: bold;
+            line-height: 1.2;
+            margin-bottom: 15px;
+            color: #000;
+        }
+
+        .lead-story .subtitle {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 15px;
+            font-weight: normal;
+        }
+
+        .lead-story .byline {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .lead-story .excerpt {
+            font-size: 1.1em;
+            line-height: 1.7;
+            color: #333;
+        }
+
+        .secondary-stories {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .story {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .story h2 {
+            font-size: 1.4em;
+            font-weight: bold;
+            line-height: 1.3;
+            margin-bottom: 10px;
+            color: #000;
+        }
+
+        .story .byline {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        .story .excerpt {
+            font-size: 1em;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .sidebar {
+            border-left: 1px solid #ddd;
+            padding-left: 30px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 40px;
+        }
+
+        .sidebar-section h3 {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #000;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+
+        .sidebar-story {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sidebar-story:last-child {
+            border-bottom: none;
+        }
+
+        .sidebar-story h4 {
+            font-size: 1.1em;
+            font-weight: bold;
+            line-height: 1.3;
+            margin-bottom: 8px;
+            color: #000;
+        }
+
+        .sidebar-story .byline {
+            font-size: 0.8em;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-story .excerpt {
+            font-size: 0.9em;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        .opinion-section {
+            background-color: #f9f9f9;
+            padding: 30px;
+            margin: 40px 0;
+            border: 1px solid #ddd;
+        }
+
+        .opinion-section h3 {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #000;
+        }
+
+        .footer {
+            background-color: #000;
+            color: #fff;
+            padding: 40px 0;
+            margin-top: 50px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+        }
+
+        .footer-section h4 {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 0.9em;
+            line-height: 2;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .secondary-stories {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                border-left: none;
+                border-top: 1px solid #ddd;
+                padding-left: 0;
+                padding-top: 30px;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .nav ul {
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+
+            .logo {
+                font-size: 2em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+
+            .header-top {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
+    </style>
+
 </html>
