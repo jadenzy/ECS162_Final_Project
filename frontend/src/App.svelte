@@ -109,7 +109,7 @@
 
 <header>
   <div class="header-top">
-    <h1 on:click|preventDefault={() => loadSection('')}>The New York Times</h1>
+    <h1 on:click|preventDefault={() => loadSection('Local')}>The New York Times</h1>
     <button class="hamburger" on:click={toggleMenu}>☰</button>
   </div>
   <p class="date time">{today}</p>

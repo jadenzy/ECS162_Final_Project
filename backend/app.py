@@ -72,20 +72,28 @@ def get_key():
 @app.route("/api/articles")
 def get_articles():
     section = request.args.get("section", "").lower()
+    query = {"section_name": {"$regex": section, "$options": "i"}} if section else {}
+
+    cached_articles = list(db.articles.find(query).limit(9))
+    if cached_articles:
+        for article in cached_articles:
+            article['_id'] = str(article['_id'])
+        return jsonify({"articles": cached_articles})
+
     api_key = os.getenv("NYT_API_KEY")
-    if section and section != 'Local':
-        fq = f'section.displayName:("{section}")'
-        url = (
-            "https://api.nytimes.com/svc/search/v2/articlesearch.json"
-            f"?fq={fq}&api-key={api_key}"
-        )
-    else:
+
+    if section == 'local':
         url = (
             "https://api.nytimes.com/svc/search/v2/articlesearch.json"
             "?q=Sacramento"
             f"&api-key={api_key}"
         )
-    url += f"&api-key={api_key}"
+    else:
+        url = (
+            "https://api.nytimes.com/svc/search/v2/articlesearch.json"
+            f"?fq={section}"
+            f"&api-key={api_key}"
+        )
 
     try:
         response = requests.get(url)
@@ -93,11 +101,14 @@ def get_articles():
         articles = data.get("response", {}).get("docs", [])[:9]
 
         for article in articles:
+            # Enrich article with section_name for querying later
+            article['section_name'] = section
             if db.articles.find_one({'web_url': article['web_url']}) is None:
                 db.articles.insert_one(article)
 
         return jsonify({"articles": articles})
     except Exception as e:
+        print("API fetch error:", e)  # helpful log
         return jsonify({"error": str(e)}), 500
 
 
