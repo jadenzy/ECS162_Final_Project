@@ -186,6 +186,30 @@ def redact_comment():
     )
     return jsonify({'message': 'Redacted'}), 200
 
+@app.route('/api/articles', methods=['POST'])
+def publish_article():
+    user_info = session.get('user', {})
+    if not user_info or user_info.get('name') != 'Publisher':
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    data = request.get_json()
+    required_fields = ['headline', 'abstract', 'section_name', 'body']
+    if not all(field in data for field in required_fields):
+        return jsonify({'error': 'Missing fields'}), 400
+
+    article = {
+        "headline": {"main": data['headline']},
+        "abstract": data['abstract'],
+        "section_name": data['section_name'],
+        "body": data['body'], 
+        "byline": {"original": f"By {user_info.get('name')}"},
+        "multimedia": data.get('multimedia', None)
+    }
+
+    db.articles.insert_one(article)
+    return jsonify({"message": "Article published"}), 201
+
+
 # Delete article (moderator only)
 @app.route('/api/article', methods=['DELETE'])
 def delete_article():
