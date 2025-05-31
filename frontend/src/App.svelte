@@ -173,8 +173,8 @@
     <div class="user-info">
       {#if user && !user.error}
         Welcome, {user?.name} | <a href="/logout">Logout</a>
-        {#if user.name === 'Publisher'}
-          <span class="publisher-badge">Publisher</span>
+        {#if user.name === 'publisher'}
+          <span class="publisher-badge">Publish Article</span>
         {/if}
       {:else}
         <button class="login-btn" on:click={handleLogin}>Login</button>
