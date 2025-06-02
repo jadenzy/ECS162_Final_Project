@@ -9,6 +9,7 @@
   let articles = [];
   let fetchError = false;
   let commentPanelOpen = false;
+  let popUpOpen = false;
   let selectedArticle = null;
   let comments = [];
   let newCommentText = '';
@@ -52,6 +53,18 @@
     commentPanelOpen = false;
     selectedArticle = null;
     comments = [];
+  }
+
+  function closePopUp() {
+    popUpOpen = false;
+  }
+
+  function submitArticle() {
+
+  }
+
+  function openPopUp() {
+    popUpOpen = true;
   }
 
   async function openComments(article) {
@@ -159,6 +172,10 @@
 
     await loadSection('Local');
   });
+
+  let headLine = ''
+  let articleContent = ''
+
 </script>
 
 <svelte:head>
@@ -182,7 +199,49 @@
     </div>
     <button class="hamburger {menuOpen ? 'open' : ''}" on:click={toggleMenu}>☰</button>
   </div>
+  <button class="openPopUp" on:click={openPopUp}>POST</button>
 </header>
+
+
+
+{#if popUpOpen}
+  <div class="PopUp" id="PopUp">
+
+    <div class="PopUpHeader">
+      <h1 class="ASP">  Article Submission Process</h1>
+      <button class="close-popup" on:click={closePopUp}>✖</button>
+    </div>
+    
+    <form action="/api/articles" method="POST">
+
+      <div class ="hlineForm">
+        <label for="hline">Headline</label>
+      </div>
+
+      <div class ="hlineInput">
+        <input type="text" id="hline" name="headline" placeholder="Your Headline Here..." required>
+      </div>
+
+      <br>
+
+      <div class ="artcontentForm">
+        <label for="artcontent">Article Content</label>
+      </div>
+
+      <div class="bodyInput">
+        <textarea id="body" name="body" placeholder="Your Article Here..."></textarea>
+        <!--<input type = "text" id="artcontent" name="body" placeholder="Your Article Here..." required>-->
+      </div>
+
+      <div class = "submitArticle">
+        <input type="submit">
+      </div>
+
+    </form>
+
+
+  </div>
+{/if}
 
 <nav class="nav {menuOpen ? 'open' : ''}">
   <div class="nav-container">
@@ -899,4 +958,114 @@
       text-align: center;
     }
   }
+
+  .PopUp {
+    background-color: #FFFFFF;
+    border-radius: 25px;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    opacity: 1;
+    left: 12rem;
+    right: 12rem;
+    bottom: 4rem;
+    top: 4rem;
+    border: 3px solid #5A5A5A;
+  }
+
+
+  .PopUpHeader {
+    display: flex;
+    justify-content: space-between;
+    padding-right: 2rem;
+    padding-left: 1.75rem;
+    padding-top: 1rem;
+    font-size: 1.7em;
+    max-height: fit-content;
+    max-height: 6rem; 
+    max-width: 98%;
+
+  }
+
+  .headlineTitle {
+    padding-left: 2rem;
+    padding-top: 1rem;
+    font-size: 2.6rem;
+  }
+
+  .headlineInput {
+    padding-left: 2rem;
+  }
+
+  input[type=text] {
+    border: 4px solid #DFDFDF;
+    border-radius: 4px;
+    width: 96.3%;
+    height: 100%;
+    font-size: 1.3rem;
+    padding-left: 5px;
+  }
+
+  textarea {
+    width: 96.3%;
+    height: 34.5rem;
+    padding: 12px;
+    box-sizing: border-box;
+    border: 4px solid #DFDFDF;
+    border-radius: 4px;
+    resize: none;
+    font-size: 1.3rem;
+    padding-top: 20px;
+    padding-left: 5px;
+  }
+
+  .hlineInput {
+    height: 100px;
+    padding-left: 2rem;
+  }
+
+  .bodyInput {
+    padding-left: 2rem;
+    padding-bottom: 34.5rem;
+
+  }
+
+  .hlineForm {
+    padding-left: 2rem;
+    padding-top: 1rem;
+    font-size: 2.6rem;
+  }
+
+  .ASP {
+    border-color: #DFDFDF;
+    border-style: none hidden solid hidden;
+    min-width: 100%;
+    border-width: .45rem;
+  }
+
+  .artcontentForm {
+    padding-left: 2rem;
+    padding-top: 1rem;
+    font-size: 2.6rem;
+  }
+
+  .bodyInput {
+    height: 35%;
+    padding-left: 2rem;
+  }
+
+
+
+  .close-popup {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.2em;
+    cursor: pointer;
+    color: #666;
+  }
+
+  
 </style>
