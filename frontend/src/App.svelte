@@ -191,7 +191,7 @@
       {#if user && !user.error}
         Welcome, {user?.name} | <a href="/logout">Logout</a>
         {#if user.name === 'publisher'}
-          <span class="publisher-badge">Publish Article</span>
+          <span class="publisher-badge" on:click={openPopUp}>Publish Article</span>
         {/if}
       {:else}
         <button class="login-btn" on:click={handleLogin}>Login</button>
@@ -199,7 +199,7 @@
     </div>
     <button class="hamburger {menuOpen ? 'open' : ''}" on:click={toggleMenu}>☰</button>
   </div>
-  <button class="openPopUp" on:click={openPopUp}>POST</button>
+  
 </header>
 
 
