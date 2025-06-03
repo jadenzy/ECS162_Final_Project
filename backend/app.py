@@ -189,7 +189,7 @@ def redact_comment():
 @app.route('/api/articles', methods=['POST'])
 def publish_article():
     user_info = session.get('user', {})
-    if not user_info or user_info.get('name') != 'Publisher':
+    if not user_info or user_info.get('name') != 'publisher':
         return jsonify({'error': 'Unauthorized'}), 401
 
     data = request.get_json()
