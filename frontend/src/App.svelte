@@ -190,6 +190,23 @@
     }
   }
 
+  async function deleteArticle(articleId) {
+    if (!confirm("Are you sure you want to delete this article?")) return;
+    try {
+      const res = await fetch(`/api/article?article_id=${articleId}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+      await loadSection(currentSection);
+    } else {
+      const err = await res.json();
+      alert(`Failed to delete article: ${err.error}`);
+    }
+    } catch (e) {
+      console.error('Error deleting article:', e);
+    }
+  }
+
 
   onMount(async () => {
     today = new Date().toLocaleDateString('en-US', {
@@ -335,6 +352,9 @@
         {#if leadStory._id}
           <button class="comment-button" on:click={() => openComments(leadStory)}>💬 Comment</button>
         {/if}
+        {#if user?.name === 'moderator'}
+          <button class="comment-button" on:click={() => deleteArticle(leadStory._id)}>🗑 Delete Article</button>
+        {/if}
       </article>
 
       <section class="secondary-stories">
@@ -353,6 +373,9 @@
             {#if story._id}
               <button class="comment-button" on:click={() => openComments(story)}>💬 Comment</button>
             {/if}
+            {#if user?.name === 'moderator'}
+              <button class="comment-button" on:click={() => deleteArticle(story._id)}>🗑 Delete</button>
+            {/if}
           </article>
         {/each}
       </section>
@@ -370,6 +393,9 @@
             <p class="excerpt">{articles[0].abstract || articles[0].excerpt}</p>
             {#if articles[0]._id}
               <button class="comment-button" on:click={() => openComments(articles[0])}>💬 Comment</button>
+            {/if}
+            {#if user?.name === 'moderator'}
+              <button class="comment-button" on:click={() => deleteArticle(articles[0]._id)}>🗑 Delete</button>
             {/if}
           </article>
         </section>
@@ -390,6 +416,9 @@
             <p class="excerpt">{(story.abstract || story.excerpt || '').substring(0, 100)}...</p>
             {#if story._id}
               <button class="comment-button small" on:click={() => openComments(story)}>💬</button>
+            {/if}
+            {#if user?.name === 'moderator'}
+              <button class="comment-button" on:click={() => deleteArticle(story._id)}>🗑</button>
             {/if}
           </article>
         {/each}
