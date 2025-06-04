@@ -142,6 +142,72 @@
   
   $: sidebarStories = articles.length > 5 ? articles.slice(5, 8) : [];
 
+  export let popUpOpen = false;
+
+  let headline = '';
+  let abstract = '';
+  let section_name = '';
+  let body = '';
+  let errorMsg = '';
+  let successMsg = '';
+
+  function openPopUp() {
+    popUpOpen = true;
+  }
+
+  function closePopUp() {
+    popUpOpen = false; 
+  }
+
+  async function submitArticle() {
+    errorMsg = '';
+    successMsg = '';
+
+    try {
+      const response = await fetch('/api/articles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          headline,
+          abstract,
+          section_name,
+          body
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit article');
+      }
+
+      successMsg = 'Article successfully submitted!';
+      headline = abstract = section_name = body = '';
+    } catch (err) {
+      errorMsg = err.message;
+    }
+  }
+
+  async function deleteArticle(articleId) {
+    if (!confirm("Are you sure you want to delete this article?")) return;
+    try {
+      const res = await fetch(`/api/article?article_id=${articleId}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+      await loadSection(currentSection);
+    } else {
+      const err = await res.json();
+      alert(`Failed to delete article: ${err.error}`);
+    }
+    } catch (e) {
+      console.error('Error deleting article:', e);
+    }
+  }
+
+
   onMount(async () => {
     today = new Date().toLocaleDateString('en-US', {
       weekday: 'long',
@@ -174,7 +240,7 @@
       {#if user && !user.error}
         Welcome, {user?.name} | <a href="/logout">Logout</a>
         {#if user.name === 'publisher'}
-          <span class="publisher-badge">Publish Article</span>
+          <span class="publisher-badge" on:click={openPopUp}>Publish Article</span>
         {/if}
       {:else}
         <button class="login-btn" on:click={handleLogin}>Login</button>
@@ -182,7 +248,67 @@
     </div>
     <button class="hamburger {menuOpen ? 'open' : ''}" on:click={toggleMenu}>☰</button>
   </div>
+  
 </header>
+
+{#if popUpOpen}
+  <div class="PopUp" id="PopUp">
+    <div class="PopUpHeader">
+      <h1 class="ASP">Article Submission Process</h1>
+      <button class="close-popup" on:click={closePopUp}>✖</button>
+    </div>
+
+    <form on:submit|preventDefault={submitArticle}>
+      <div class="hlineForm">
+        <label for="headline">Headline</label>
+      </div>
+      <div class="hlineInput">
+        <input type="text" id="headline" bind:value={headline} placeholder="Your Headline Here..." required />
+      </div>
+
+      <div class="hlineForm">
+        <label for="abstract">Abstract</label>
+      </div>
+      <div class="hlineInput">
+        <input type="text" id="abstract" bind:value={abstract} placeholder="Short abstract..." required />
+      </div>
+
+      <div class="hlineForm">
+        <label for="section">Section</label>
+      </div>
+      <div class="hlineInput">
+        <select id="section" bind:value={section_name} required>
+          <option value="" disabled selected>Select a section...</option>
+          <option value="local">Local</option>
+          <option value="us">U.S.</option>
+          <option value="world">World</option>
+          <option value="climate">Climate</option>
+          <option value="arts">Arts</option>
+          <option value="opinion">Opinion</option>
+        </select>
+      </div>
+
+      <div class="artcontentForm">
+        <label for="body">Article Content</label>
+      </div>
+      <div class="bodyInput">
+        <textarea id="body" bind:value={body} placeholder="Your Article Here..." required></textarea>
+      </div>
+
+      <div class="submitArticle">
+        <button type="submit">Submit Article</button>
+      </div>
+    </form>
+
+    {#if errorMsg}
+      <p class="error-msg">{errorMsg}</p>
+    {/if}
+    {#if successMsg}
+      <p class="success-msg">{successMsg}</p>
+    {/if}
+  </div>
+{/if}
+
 
 <nav class="nav {menuOpen ? 'open' : ''}">
   <div class="nav-container">
@@ -226,6 +352,9 @@
         {#if leadStory._id}
           <button class="comment-button" on:click={() => openComments(leadStory)}>💬 Comment</button>
         {/if}
+        {#if user?.name === 'moderator'}
+          <button class="comment-button" on:click={() => deleteArticle(leadStory._id)}>🗑 Delete Article</button>
+        {/if}
       </article>
 
       <section class="secondary-stories">
@@ -244,6 +373,9 @@
             {#if story._id}
               <button class="comment-button" on:click={() => openComments(story)}>💬 Comment</button>
             {/if}
+            {#if user?.name === 'moderator'}
+              <button class="comment-button" on:click={() => deleteArticle(story._id)}>🗑 Delete</button>
+            {/if}
           </article>
         {/each}
       </section>
@@ -261,6 +393,9 @@
             <p class="excerpt">{articles[0].abstract || articles[0].excerpt}</p>
             {#if articles[0]._id}
               <button class="comment-button" on:click={() => openComments(articles[0])}>💬 Comment</button>
+            {/if}
+            {#if user?.name === 'moderator'}
+              <button class="comment-button" on:click={() => deleteArticle(articles[0]._id)}>🗑 Delete</button>
             {/if}
           </article>
         </section>
@@ -281,6 +416,9 @@
             <p class="excerpt">{(story.abstract || story.excerpt || '').substring(0, 100)}...</p>
             {#if story._id}
               <button class="comment-button small" on:click={() => openComments(story)}>💬</button>
+            {/if}
+            {#if user?.name === 'moderator'}
+              <button class="comment-button" on:click={() => deleteArticle(story._id)}>🗑</button>
             {/if}
           </article>
         {/each}
@@ -356,547 +494,5 @@
 {/if}
 
 <style>
-  :global(*) {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
-  :global(body) {
-    font-family: 'Georgia', 'Times New Roman', serif;
-    line-height: 1.6;
-    color: #333;
-    background-color: #fff;
-  }
-
-  .header {
-    border-bottom: 1px solid #ddd;
-    padding: 15px 0 10px 0;
-    background-color: #fff;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .header-top {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-  }
-
-  .date {
-    font-size: 0.8em;
-    color: #666;
-  }
-
-  .logo {
-    font-size: 2.8em;
-    font-weight: normal;
-    color: #000;
-    background: none;
-    border: none;
-    font-family: 'Old English Text MT', 'Times New Roman', serif;
-    font-style: italic;
-    cursor: pointer;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
-  .user-info {
-    font-size: 0.8em;
-    color: #666;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .login-btn {
-    color: #326891;
-    text-decoration: underline;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: inherit;
-  }
-
-  .publisher-badge {
-    background: #326891;
-    color: white;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 0.7em;
-  }
-
-  .hamburger {
-    display: none;
-    background: none;
-    border: none;
-    font-size: 1.5em;
-    cursor: pointer;
-  }
-
-  .nav {
-    background-color: #fff;
-    border-bottom: 1px solid #ddd;
-    padding: 10px 0;
-  }
-
-  .nav-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    text-align: center;
-  }
-
-  .nav ul {
-    list-style: none;
-    display: inline-flex;
-    gap: 20px;
-    border: 1px solid #ddd;
-    padding: 8px 15px;
-    background-color: #f8f8f8;
-  }
-
-  .nav a {
-    text-decoration: underline;
-    color: #326891;
-    font-size: 0.85em;
-    font-weight: normal;
-    transition: color 0.3s;
-  }
-
-  .nav a:hover,
-  .nav a.active {
-    color: #1a4d6b;
-    font-weight: bold;
-  }
-
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 30px 20px;
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 40px;
-    transition: filter 0.3s ease;
-  }
-
-  .container.blurred {
-    filter: blur(3px);
-  }
-
-  .error-message,
-  .loading {
-    text-align: center;
-    padding: 40px 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .error-message button {
-    margin-top: 10px;
-    padding: 8px 16px;
-    background: #326891;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  .main-content {
-    display: grid;
-    gap: 30px;
-  }
-
-  .lead-story {
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 30px;
-  }
-
-  .lead-image {
-    width: 100%;
-    max-height: 300px;
-    object-fit: cover;
-    margin-bottom: 15px;
-  }
-
-  .lead-story h1 {
-    font-size: 2.2em;
-    font-weight: bold;
-    line-height: 1.2;
-    margin-bottom: 15px;
-    color: #000;
-  }
-
-  .lead-story h1 a {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  .lead-story h1 a:hover {
-    text-decoration: underline;
-  }
-
-  .lead-story .subtitle {
-    font-size: 1.2em;
-    color: #666;
-    margin-bottom: 15px;
-    font-weight: normal;
-  }
-
-  .lead-story .byline {
-    font-size: 0.9em;
-    color: #666;
-    margin-bottom: 20px;
-    font-style: italic;
-  }
-
-  .lead-story .excerpt {
-    font-size: 1.1em;
-    line-height: 1.7;
-    color: #333;
-    margin-bottom: 15px;
-  }
-
-  .secondary-stories {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-  }
-
-  .story {
-    border-bottom: 1px solid #eee;
-    padding-bottom: 20px;
-  }
-
-  .story-image {
-    width: 100%;
-    max-height: 150px;
-    object-fit: cover;
-    margin-bottom: 10px;
-  }
-
-  .story h2 {
-    font-size: 1.4em;
-    font-weight: bold;
-    line-height: 1.3;
-    margin-bottom: 10px;
-    color: #000;
-  }
-
-  .story h2 a {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  .story h2 a:hover {
-    text-decoration: underline;
-  }
-
-  .story .byline {
-    font-size: 0.85em;
-    color: #666;
-    margin-bottom: 10px;
-    font-style: italic;
-  }
-
-  .story .excerpt {
-    font-size: 1em;
-    line-height: 1.6;
-    color: #333;
-    margin-bottom: 10px;
-  }
-
-  .comment-button {
-    background: #326891;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85em;
-    transition: background-color 0.3s;
-  }
-
-  .comment-button:hover {
-    background: #1a4d6b;
-  }
-
-  .comment-button.small {
-    padding: 4px 8px;
-    font-size: 0.75em;
-  }
-
-  .sidebar {
-    border-left: 1px solid #ddd;
-    padding-left: 30px;
-  }
-
-  .sidebar-section {
-    margin-bottom: 40px;
-  }
-
-  .sidebar-section h3 {
-    font-size: 1.3em;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #000;
-    border-bottom: 2px solid #000;
-    padding-bottom: 10px;
-  }
-
-  .sidebar-story {
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
-  }
-
-  .sidebar-story:last-child {
-    border-bottom: none;
-  }
-
-  .sidebar-story h4 {
-    font-size: 1.1em;
-    font-weight: bold;
-    line-height: 1.3;
-    margin-bottom: 8px;
-    color: #000;
-  }
-
-  .sidebar-story h4 a {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  .sidebar-story h4 a:hover {
-    text-decoration: underline;
-  }
-
-  .sidebar-story .byline {
-    font-size: 0.8em;
-    color: #666;
-    font-style: italic;
-    margin-bottom: 5px;
-  }
-
-  .sidebar-story .excerpt {
-    font-size: 0.9em;
-    line-height: 1.5;
-    color: #333;
-    margin-bottom: 8px;
-  }
-
-  .opinion-section {
-    background-color: #f9f9f9;
-    padding: 30px;
-    margin: 40px 0;
-    border: 1px solid #ddd;
-  }
-
-  .opinion-section h3 {
-    font-size: 1.5em;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #000;
-  }
-
-  .footer {
-    background-color: #000;
-    color: #fff;
-    padding: 40px 0;
-    margin-top: 50px;
-  }
-
-  .footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 30px;
-  }
-
-  .footer-section h4 {
-    font-size: 1.1em;
-    font-weight: bold;
-    margin-bottom: 15px;
-    color: #fff;
-  }
-
-  .footer-section ul {
-    list-style: none;
-  }
-
-  .footer-section a {
-    color: #ccc;
-    text-decoration: none;
-    font-size: 0.9em;
-    line-height: 2;
-    transition: color 0.3s;
-  }
-
-  .footer-section a:hover {
-    color: #fff;
-  }
-
-  .comment-panel {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 400px;
-    height: 100vh;
-    background: white;
-    border-left: 1px solid #ddd;
-    padding: 20px;
-    overflow-y: auto;
-    z-index: 1000;
-    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-  }
-
-  .close-panel {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background: none;
-    border: none;
-    font-size: 1.2em;
-    cursor: pointer;
-    color: #666;
-  }
-
-  .comment-list {
-    margin: 20px 0;
-    max-height: 60%;
-    overflow-y: auto;
-  }
-
-  .comment-form {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
-  }
-
-  .comment-form textarea {
-    width: 100%;
-    min-height: 80px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-family: inherit;
-    resize: vertical;
-  }
-
-  .comment-form button {
-    margin-top: 10px;
-    padding: 8px 16px;
-    background: #326891;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  .login-prompt {
-    text-align: center;
-    margin: 20px 0;
-  }
-
-  .login-prompt button {
-    background: none;
-    border: none;
-    color: #326891;
-    text-decoration: underline;
-    cursor: pointer;
-    font-family: inherit;
-  }
-
-  @media (max-width: 768px) {
-    .hamburger {
-      display: block;
-    }
-
-    .nav {
-      display: none;
-    }
-
-    .nav.open {
-      display: block;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: white;
-      border-bottom: 1px solid #ddd;
-      z-index: 99;
-    }
-
-    .nav.open ul {
-      flex-direction: column;
-      gap: 0;
-      border: none;
-      padding: 0;
-      background: none;
-    }
-
-    .nav.open li {
-      border-bottom: 1px solid #eee;
-      padding: 10px 20px;
-    }
-
-    .logo {
-      font-size: 2em;
-      position: static;
-      transform: none;
-    }
-
-    .header-top {
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    .container {
-      grid-template-columns: 1fr;
-      gap: 30px;
-    }
-
-    .secondary-stories {
-      grid-template-columns: 1fr;
-    }
-
-    .sidebar {
-      border-left: none;
-      border-top: 1px solid #ddd;
-      padding-left: 0;
-      padding-top: 30px;
-    }
-
-    .footer-content {
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .comment-panel {
-      width: 100%;
-      left: 0;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .footer-content {
-      grid-template-columns: 1fr;
-    }
-
-    .header-top {
-      flex-direction: column;
-      gap: 10px;
-      text-align: center;
-    }
-  }
+  @import 'app.css';
 </style>
