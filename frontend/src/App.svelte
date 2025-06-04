@@ -14,6 +14,8 @@
   let newCommentText = '';
   let user = null;
   let currentSection = 'Local';
+  let articlePanelOpen = false;
+  let selectedFullArticle = null;
 
   let fallbackData = {
     leadStory: {
@@ -52,6 +54,28 @@
     commentPanelOpen = false;
     selectedArticle = null;
     comments = [];
+  }
+
+  async function openArticlePanel(article) {
+    selectedFullArticle = article;
+    articlePanelOpen = true;
+    
+    if (article._id) {
+      try {
+        const res = await fetch(`/api/article/${article._id}`);
+        if (res.ok) {
+          const fullArticle = await res.json();
+          selectedFullArticle = { ...article, ...fullArticle };
+        }
+      } catch (e) {
+        console.error('Failed to fetch full article:', e);
+      }
+    }
+  }
+
+  function closeArticlePanel() {
+    articlePanelOpen = false;
+    selectedFullArticle = null;
   }
 
   async function openComments(article) {
@@ -207,7 +231,6 @@
     }
   }
 
-
   onMount(async () => {
     today = new Date().toLocaleDateString('en-US', {
       weekday: 'long',
@@ -248,7 +271,6 @@
     </div>
     <button class="hamburger {menuOpen ? 'open' : ''}" on:click={toggleMenu}>☰</button>
   </div>
-  
 </header>
 
 {#if popUpOpen}
@@ -309,7 +331,6 @@
   </div>
 {/if}
 
-
 <nav class="nav {menuOpen ? 'open' : ''}">
   <div class="nav-container">
     <ul>
@@ -333,16 +354,17 @@
     <p>Loading latest news...</p>
   </div>
 {:else}
-  <div class="container {commentPanelOpen ? 'blurred' : ''}">
+  <div class="container {commentPanelOpen || articlePanelOpen ? 'blurred' : ''}">
     <main class="main-content">
       <article class="lead-story">
         {#if leadStory.multimedia}
           <img src={leadStory.multimedia.url || leadStory.multimedia.default?.url} alt="Lead story image" class="lead-image" />
         {/if}
         <h1>
-          <a href={leadStory.web_url} target="_blank" rel="noopener noreferrer">
+          <!-- Updated: Made headline clickable to open article panel -->
+          <button class="article-link" on:click={() => openArticlePanel(leadStory)}>
             {leadStory.headline?.main || leadStory.title}
-          </a>
+          </button>
         </h1>
         {#if leadStory.subtitle}
           <p class="subtitle">{leadStory.subtitle}</p>
@@ -364,9 +386,10 @@
               <img src={story.multimedia.url || story.multimedia.default?.url} alt="Article image" class="story-image" />
             {/if}
             <h2>
-              <a href={story.web_url} target="_blank" rel="noopener noreferrer">
+              <!-- Updated: Made headline clickable to open article panel -->
+              <button class="article-link" on:click={() => openArticlePanel(story)}>
                 {story.headline?.main || story.title}
-              </a>
+              </button>
             </h2>
             <p class="byline">{story.byline?.original || story.byline}</p>
             <p class="excerpt">{story.abstract || story.excerpt}</p>
@@ -385,9 +408,10 @@
           <h3>Opinion</h3>
           <article class="story">
             <h2>
-              <a href={articles[0].web_url} target="_blank" rel="noopener noreferrer">
+              <!-- Updated: Made headline clickable to open article panel -->
+              <button class="article-link" on:click={() => openArticlePanel(articles[0])}>
                 {articles[0].headline?.main || articles[0].title}
-              </a>
+              </button>
             </h2>
             <p class="byline">{articles[0].byline?.original || articles[0].byline}</p>
             <p class="excerpt">{articles[0].abstract || articles[0].excerpt}</p>
@@ -408,9 +432,10 @@
         {#each sidebarStories as story}
           <article class="sidebar-story">
             <h4>
-              <a href={story.web_url} target="_blank" rel="noopener noreferrer">
+              <!-- Updated: Made headline clickable to open article panel -->
+              <button class="article-link small" on:click={() => openArticlePanel(story)}>
                 {story.headline?.main || story.title}
-              </a>
+              </button>
             </h4>
             <p class="byline">{story.byline?.original || story.byline}</p>
             <p class="excerpt">{(story.abstract || story.excerpt || '').substring(0, 100)}...</p>
@@ -462,6 +487,63 @@
   </div>
 </footer>
 
+{#if articlePanelOpen && selectedFullArticle}
+  <div class="article-panel">
+    <div class="article-panel-header">
+      <button class="close-panel" on:click={closeArticlePanel}>✖</button>
+      <div class="article-actions">
+        {#if selectedFullArticle._id}
+          <button class="comment-button" on:click={() => openComments(selectedFullArticle)}>💬 Comment</button>
+        {/if}
+        {#if user?.name === 'moderator'}
+          <button class="comment-button" on:click={() => deleteArticle(selectedFullArticle._id)}>🗑 Delete</button>
+        {/if}
+      </div>
+    </div>
+    
+    <div class="article-panel-content">
+      <div class="article-meta">
+        <span class="article-section">{currentSection}</span>
+        <span class="article-date">{today}</span>
+      </div>
+      
+      <h1 class="article-title">{selectedFullArticle.headline?.main || selectedFullArticle.title}</h1>
+      
+      {#if selectedFullArticle.subtitle}
+        <p class="article-subtitle">{selectedFullArticle.subtitle}</p>
+      {/if}
+      
+      <p class="article-byline">{selectedFullArticle.byline?.original || selectedFullArticle.byline}</p>
+      
+      {#if selectedFullArticle.multimedia}
+        <div class="article-image-container">
+          <img 
+            src={selectedFullArticle.multimedia.url || selectedFullArticle.multimedia.default?.url} 
+            alt="Article image" 
+            class="article-full-image" 
+          />
+          {#if selectedFullArticle.multimedia.caption}
+            <p class="image-caption">{selectedFullArticle.multimedia.caption}</p>
+          {/if}
+        </div>
+      {/if}
+      
+      <div class="article-body">
+        {#if selectedFullArticle.body}
+          <!-- If you have full body content from your API -->
+          {@html selectedFullArticle.body.replace(/\n/g, '<br><br>')}
+        {:else}
+          <!-- Fallback to abstract/excerpt -->
+          <p>{selectedFullArticle.abstract || selectedFullArticle.excerpt}</p>
+          {#if selectedFullArticle.web_url && selectedFullArticle.web_url !== '#'}
+            <p><a href={selectedFullArticle.web_url} target="_blank" rel="noopener noreferrer">Read full article on original source →</a></p>
+          {/if}
+        {/if}
+      </div>
+    </div>
+  </div>
+{/if}
+
 {#if commentPanelOpen}
   <aside class="comment-panel">
     <button class="close-panel" on:click={closeComments}>✖</button>
@@ -495,4 +577,153 @@
 
 <style>
   @import 'app.css';
+
+  .article-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    z-index: 1000;
+    overflow-y: auto;
+    animation: slideInFromRight 0.3s ease-out;
+  }
+  
+  @keyframes slideInFromRight {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  
+  .article-panel-header {
+    position: sticky;
+    top: 0;
+    background: white;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .article-panel-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    line-height: 1.6;
+  }
+  
+  .article-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    color: #666;
+  }
+  
+  .article-section {
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #000;
+  }
+  
+  .article-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    color: #000;
+  }
+  
+  .article-subtitle {
+    font-size: 1.25rem;
+    color: #666;
+    margin-bottom: 1rem;
+    font-weight: 300;
+  }
+  
+  .article-byline {
+    font-size: 0.875rem;
+    color: #666;
+    margin-bottom: 2rem;
+    font-style: italic;
+  }
+  
+  .article-image-container {
+    margin: 2rem 0;
+  }
+  
+  .article-full-image {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
+  
+  .image-caption {
+    font-size: 0.875rem;
+    color: #666;
+    margin-top: 0.5rem;
+    font-style: italic;
+  }
+  
+  .article-body {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: #333;
+  }
+  
+  .article-body p {
+    margin-bottom: 1.5rem;
+  }
+  
+  .article-actions {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .article-link {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    transition: color 0.2s ease;
+  }
+  
+  .article-link:hover {
+    color: #0066cc;
+    text-decoration: underline;
+  }
+  
+  .article-link.small {
+    font-size: inherit;
+  }
+  
+  @media (max-width: 768px) {
+    .article-panel-content {
+      padding: 1rem;
+    }
+    
+    .article-title {
+      font-size: 1.875rem;
+    }
+    
+    .article-panel-header {
+      padding: 1rem;
+    }
+    
+    .article-actions {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
 </style>
