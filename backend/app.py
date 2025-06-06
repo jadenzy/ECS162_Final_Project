@@ -177,9 +177,9 @@ def redact_comment():
 
     data = request.get_json()
     comment_id = data.get('id')
-    original_text = data.get('text')
+    redacted = data.get('text')
 
-    redacted = '█' * len(original_text)
+    #redacted = '█' * len(original_text)
     db.comments.update_one(
         {"_id": ObjectId(comment_id)},
         {"$set": {"redacted_text": redacted}}
