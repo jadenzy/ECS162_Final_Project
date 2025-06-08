@@ -629,9 +629,12 @@
 }
 
 .article-full-image {
-  width: 100%;
+  max-width: 600px;    
+  width: 100%;         
   height: auto;
   border-radius: 4px;
+  display: block;      
+  margin: 0 auto;      
 }
 
 .image-caption {

@@ -16,6 +16,7 @@
   let currentSection = 'Local';
   let articlePanelOpen = false;
   let selectedFullArticle = null;
+  let imageInput;
 
   let fallbackData = {
     leadStory: {
@@ -59,18 +60,6 @@
   async function openArticlePanel(article) {
     selectedFullArticle = article;
     articlePanelOpen = true;
-    
-    if (article._id) {
-      try {
-        const res = await fetch(`/api/article/${article._id}`);
-        if (res.ok) {
-          const fullArticle = await res.json();
-          selectedFullArticle = { ...article, ...fullArticle };
-        }
-      } catch (e) {
-        console.error('Failed to fetch full article:', e);
-      }
-    }
   }
 
   function closeArticlePanel() {
@@ -193,9 +182,24 @@
     localStorage.setItem('darkMode', isDark ? 'true' : 'false');
   }
 
+  // change file format to binary
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+  }
+
   async function submitArticle() {
     errorMsg = '';
     successMsg = '';
+
+    let multimediaData = null;
+    if (imageInput.files.length > 0) {
+      multimediaData = await fileToBase64(imageInput.files[0]);
+    }
 
     try {
       const response = await fetch('/api/articles', {
@@ -207,7 +211,8 @@
           headline,
           abstract,
           section_name,
-          body
+          body,
+          multimedia: multimediaData
         })
       });
 
@@ -219,6 +224,7 @@
 
       successMsg = 'Article successfully submitted!';
       headline = abstract = section_name = body = '';
+      if (imageInput) imageInput.value = '';
     } catch (err) {
       errorMsg = err.message;
     }
@@ -374,6 +380,10 @@
         <textarea id="body" bind:value={body} placeholder="Your Article Here..." required></textarea>
       </div>
 
+      <div class="imageInput">
+        <input type="file" id="image" bind:this={imageInput} />
+      </div>
+
       <div class="submitArticle">
         <button type="submit">Submit Article</button>
       </div>
@@ -415,7 +425,11 @@
     <main class="main-content">
       <article class="lead-story">
         {#if leadStory.multimedia}
-          <img src={leadStory.multimedia.url || leadStory.multimedia.default?.url} alt="Lead story image" class="lead-image" />
+          {#if typeof leadStory.multimedia === 'string'}
+            <img src={leadStory.multimedia} alt="Article image" class="story-image"/>
+          {:else}
+            <img src={leadStory.multimedia.url || leadStory.multimedia.default?.url} alt="Lead story image" class="lead-image" />
+          {/if}
         {/if}
         <h1>
           <!-- Updated: Made headline clickable to open article panel -->
@@ -448,7 +462,11 @@
         {#each secondaryStories as story}
           <article class="story">
             {#if story.multimedia}
-              <img src={story.multimedia.url || story.multimedia.default?.url} alt="Article image" class="story-image" />
+              {#if typeof story.multimedia === 'string'}
+                <img src={story.multimedia} alt="Article image" class="story-image"/>
+              {:else}
+                <img src={story.multimedia.url || story.multimedia.default?.url} alt="Article image" class="story-image" />
+              {/if}
             {/if}
             <h2>
               <!-- Updated: Made headline clickable to open article panel -->
@@ -622,11 +640,15 @@
       
       {#if selectedFullArticle.multimedia}
         <div class="article-image-container">
-          <img 
-            src={selectedFullArticle.multimedia.url || selectedFullArticle.multimedia.default?.url} 
-            alt="Article image" 
-            class="article-full-image" 
-          />
+          {#if typeof selectedFullArticle.multimedia === 'string'}
+            <img src={selectedFullArticle.multimedia} alt="Article image" class="article-full-image" />
+          {:else}
+            <img 
+              src={selectedFullArticle.multimedia.url || selectedFullArticle.multimedia.default?.url} 
+              alt="Article image" 
+              class="article-full-image" 
+            />
+          {/if}
           {#if selectedFullArticle.multimedia.caption}
             <p class="image-caption">{selectedFullArticle.multimedia.caption}</p>
           {/if}
