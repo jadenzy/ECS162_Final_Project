@@ -488,9 +488,9 @@
         <h3>Pending Approval</h3>
         {#each unapprovedArticles as pending}
           <article class="story">
-            <h2>{pending.headline}</h2>
-            <p class="byline">{pending.byline}</p>
-            <p class="excerpt">{pending.abstract}</p>
+            <h2>{pending.headline?.main || pending.title}</h2>
+            <p class="byline">{pending.byline?.original || pending.byline}</p>
+            <p class="excerpt">{pending.abstract?.text || pending.abstract}</p>
             <button class="comment-button" on:click={() => approveArticle(pending._id)}>✅ Approve</button>
             <button class="comment-button" on:click={() => deleteArticle(pending._id)}>🗑 Delete</button>
           </article>
