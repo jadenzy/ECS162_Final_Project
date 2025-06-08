@@ -811,3 +811,93 @@ body.dark .comment-form textarea {
 body.dark .dark-toggle {
   color: #bbdefb;
 }
+
+.PopUp {
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+width: 90%;
+max-width: 700px;
+background: white;
+border-radius: 8px;
+box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+padding: 2rem;
+z-index: 999;
+max-height: 90vh;
+overflow-y: auto;
+}
+
+.ASP {
+font-size: 1.8rem;
+font-weight: bold;
+margin-bottom: 1.5rem;
+}
+.PopUpHeader {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 1rem;
+}
+
+.close-popup {
+background: transparent;
+border: none;
+font-size: 1.5rem;
+cursor: pointer;
+margin-left: auto;
+}
+
+.hlineInput input,
+.bodyInput textarea,
+.hlineInput select {
+width: 100%;
+padding: 0.8rem;
+border: 1px solid #ccc;
+border-radius: 4px;
+font-size: 1rem;
+font-family: inherit; 
+ margin-bottom: 1rem;
+box-sizing: border-box;
+}
+.bodyInput textarea {
+min-height: 200px; 
+}
+
+.upload-area {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin: 1rem 0;
+}
+
+.file-upload-box {
+border: 2px dashed #ccc;
+padding: 1rem;
+text-align: center;
+width: 70%;
+border-radius: 4px;
+font-size: 0.9rem;
+color: #555;
+}
+
+.submitArticle {
+display: flex;
+justify-content: flex-end;
+}
+
+.submitArticle button {
+background-color: #333;
+color: white;
+padding: 0.8rem 1.5rem;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+position: relative;
+font-weight: bold;
+}
+
+.submitArticle button::after {
+content: "→";
+margin-left: 0.5rem;
+}
