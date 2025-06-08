@@ -72,44 +72,53 @@ def get_key():
 @app.route("/api/articles")
 def get_articles():
     section = request.args.get("section", "").lower()
-    query = {"section_name": {"$regex": section, "$options": "i"}} if section else {}
+    user_info = session.get('user', {})
+    is_moderator = user_info.get('name') == 'moderator'
+    is_publisher = user_info.get('name') == 'publisher'
 
-    cached_articles = list(db.articles.find(query).limit(9))
-    if cached_articles:
-        for article in cached_articles:
-            article['_id'] = str(article['_id'])
-        return jsonify({"articles": cached_articles})
+    query_base = {"section_name": {"$regex": section, "$options": "i"}} if section else {}
+    if not (is_moderator or is_publisher):
+        query_base["approved"] = True
 
-    api_key = os.getenv("NYT_API_KEY")
+    # First, get publisher articles without NYT web_url
+    pub_query = {**query_base, "web_url": {"$exists": False}}
+    publisher_articles = list(db.articles.find(pub_query).sort("cached_at", -1))
 
-    if section == 'local':
-        url = (
-            "https://api.nytimes.com/svc/search/v2/articlesearch.json"
-            "?q=Sacramento"
-            f"&api-key={api_key}"
-        )
-    else:
-        url = (
-            "https://api.nytimes.com/svc/search/v2/articlesearch.json"
-            f"?fq={section}"
-            f"&api-key={api_key}"
-        )
+    # Then, if fewer than 9, fetch NYT articles
+    nyt_articles = []
+    if len(publisher_articles) < 9:
+        api_key = os.getenv("NYT_API_KEY")
+        if section == 'local':
+            url = (
+                "https://api.nytimes.com/svc/search/v2/articlesearch.json"
+                "?q=Sacramento"
+                f"&api-key={api_key}"
+            )
+        else:
+            url = (
+                "https://api.nytimes.com/svc/search/v2/articlesearch.json"
+                f"?fq={section}"
+                f"&api-key={api_key}"
+            )
 
-    try:
-        response = requests.get(url)
-        data = response.json()
-        articles = data.get("response", {}).get("docs", [])[:9]
+        try:
+            response = requests.get(url)
+            data = response.json()
+            docs = data.get("response", {}).get("docs", [])
+            for article in docs:
+                article['section_name'] = section
+                article['approved'] = True
+                if db.articles.find_one({'web_url': article['web_url']}) is None:
+                    db.articles.insert_one(article)
+            nyt_articles = docs[:9 - len(publisher_articles)]
+        except Exception as e:
+            print("NYT API error:", e)
 
-        for article in articles:
-            # Enrich article with section_name for querying later
-            article['section_name'] = section
-            if db.articles.find_one({'web_url': article['web_url']}) is None:
-                db.articles.insert_one(article)
+    combined = publisher_articles + nyt_articles
+    for a in combined:
+        a['_id'] = str(a['_id'])
 
-        return jsonify({"articles": articles})
-    except Exception as e:
-        print("API fetch error:", e)  # helpful log
-        return jsonify({"error": str(e)}), 500
+    return jsonify({"articles": combined})
 
 
 @app.route("/test-mongo")
@@ -203,12 +212,45 @@ def publish_article():
         "section_name": data['section_name'],
         "body": data['body'], 
         "byline": {"original": f"By {user_info.get('name')}"},
-        "multimedia": data.get('multimedia', None)
+        "multimedia": data.get('multimedia', None),
+        "approved": False,
     }
 
     db.articles.insert_one(article)
     return jsonify({"message": "Article published"}), 201
 
+@app.route('/api/articles/pending')
+def get_pending_articles():
+    user_info = session.get('user', {})
+    if not user_info or user_info.get('name') != 'moderator':
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    articles = list(db.articles.find({"approved": False}))
+    for article in articles:
+        article['_id'] = str(article['_id'])
+    return jsonify({"articles": articles})
+
+
+@app.route('/api/article/approve', methods=['PATCH'])
+def approve_article():
+    user_info = session.get('user', {})
+    if not user_info or user_info.get('name') != 'moderator':
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    data = request.get_json()
+    article_id = data.get('article_id')
+    if not article_id:
+        return jsonify({'error': 'Missing article_id'}), 400
+
+    result = db.articles.update_one(
+        {'_id': ObjectId(article_id)},
+        {'$set': {'approved': True}}
+    )
+
+    if not db.articles.find_one({'_id': ObjectId(article_id)}):
+        return jsonify({'error': 'Article not found'}), 404
+
+    return jsonify({'message': 'Article approved'}), 200
 
 # Delete article (moderator only)
 @app.route('/api/article', methods=['DELETE'])

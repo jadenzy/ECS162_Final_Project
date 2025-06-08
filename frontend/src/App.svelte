@@ -152,7 +152,11 @@
     
     try {
       const result = await fetchArticles(section);
-      articles = result.articles;
+      if (user?.name === 'moderator' || user?.name === 'publisher') {
+        articles = result.articles;
+      } else {
+        articles = result.articles.filter(a => a.approved === true);
+      }
       fetchError = result.fetchError;
     } catch (e) {
       console.error('Failed to load section:', e);
@@ -181,6 +185,12 @@
 
   function closePopUp() {
     popUpOpen = false; 
+  }
+
+  function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    const isDark = document.body.classList.contains('dark');
+    localStorage.setItem('darkMode', isDark ? 'true' : 'false');
   }
 
   async function submitArticle() {
@@ -214,6 +224,19 @@
     }
   }
 
+  let unapprovedArticles = [];
+  async function fetchUnapprovedArticles() {
+    try {
+      const res = await fetch('/api/articles/pending');
+      if (res.ok) {
+        const data = await res.json();
+        unapprovedArticles = data.articles;
+      }
+    } catch (e) {
+      console.error('Failed to fetch unapproved articles:', e);
+    }
+  }
+
   async function deleteArticle(articleId) {
     if (!confirm("Are you sure you want to delete this article?")) return;
     try {
@@ -231,6 +254,25 @@
     }
   }
 
+  async function approveArticle(articleId) {
+    try {
+      const res = await fetch(`/api/article/approve`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ article_id: articleId }),
+      });
+      if (res.ok) {
+        await fetchUnapprovedArticles();
+        await loadSection(currentSection);
+      } else {
+        console.error('Failed to approve article');
+      }
+    } catch (e) {
+      console.error('Error approving article:', e);
+    }
+  }
+
+
   onMount(async () => {
     today = new Date().toLocaleDateString('en-US', {
       weekday: 'long',
@@ -239,11 +281,21 @@
       day: 'numeric',
     });
 
+    const savedMode = localStorage.getItem('darkMode');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (savedMode === 'true' || (savedMode === null && prefersDark)) {
+      document.body.classList.add('dark');
+    }
+
     try {
       const res = await fetch('/api/user', { credentials: 'include' });
       user = await res.json();
     } catch (e) {
       user = null;
+    }
+
+    if (user?.name === 'moderator') {
+      await fetchUnapprovedArticles();
     }
 
     await loadSection('Local');
@@ -268,9 +320,14 @@
       {:else}
         <button class="login-btn" on:click={handleLogin}>Login</button>
       {/if}
+      <button class="dark-toggle" on:click={toggleDarkMode}>
+        🌓
+      </button>
     </div>
+    
     <button class="hamburger {menuOpen ? 'open' : ''}" on:click={toggleMenu}>☰</button>
   </div>
+  
 </header>
 
 {#if popUpOpen}
@@ -425,6 +482,22 @@
         </section>
       {/if}
     </main>
+
+    {#if user?.name === 'moderator'}
+      <section class="opinion-section">
+        <h3>Pending Approval</h3>
+        {#each unapprovedArticles as pending}
+          <article class="story">
+            <h2>{pending.headline}</h2>
+            <p class="byline">{pending.byline}</p>
+            <p class="excerpt">{pending.abstract}</p>
+            <button class="comment-button" on:click={() => approveArticle(pending._id)}>✅ Approve</button>
+            <button class="comment-button" on:click={() => deleteArticle(pending._id)}>🗑 Delete</button>
+          </article>
+        {/each}
+      </section>
+    {/if}
+
 
     <aside class="sidebar">
       <section class="sidebar-section">
