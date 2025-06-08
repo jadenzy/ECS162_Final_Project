@@ -426,7 +426,15 @@
         {#if leadStory.subtitle}
           <p class="subtitle">{leadStory.subtitle}</p>
         {/if}
-        <p class="byline">{leadStory.byline?.original || leadStory.byline}</p>
+        <p class="byline">
+          {#if typeof leadStory.byline === 'string'}
+            {leadStory.byline}
+          {:else if leadStory.byline?.original}
+            {leadStory.byline.original}
+          {:else}
+            Anonymous        
+          {/if}
+        </p>
         <p class="excerpt">{leadStory.abstract || leadStory.excerpt}</p>
         {#if leadStory._id}
           <button class="comment-button" on:click={() => openComments(leadStory)}>💬 Comment</button>
@@ -448,7 +456,15 @@
                 {story.headline?.main || story.title}
               </button>
             </h2>
-            <p class="byline">{story.byline?.original || story.byline}</p>
+            <p class="byline">
+              {#if typeof story.byline === 'string'}
+                {story.byline}
+              {:else if story.byline?.original}
+                {story.byline.original}
+              {:else}
+                Anonymous      
+              {/if}      
+            </p>
             <p class="excerpt">{story.abstract || story.excerpt}</p>
             {#if story._id}
               <button class="comment-button" on:click={() => openComments(story)}>💬 Comment</button>
@@ -470,7 +486,15 @@
                 {articles[0].headline?.main || articles[0].title}
               </button>
             </h2>
-            <p class="byline">{articles[0].byline?.original || articles[0].byline}</p>
+            <p class="byline">
+              {#if typeof articles[0].byline === 'string'}
+                {articles[0].byline}
+              {:else if articles[0].byline?.original}
+                {articles[0].byline.original}
+              {:else}
+                Anonymous
+              {/if}            
+            </p>
             <p class="excerpt">{articles[0].abstract || articles[0].excerpt}</p>
             {#if articles[0]._id}
               <button class="comment-button" on:click={() => openComments(articles[0])}>💬 Comment</button>
@@ -510,7 +534,15 @@
                 {story.headline?.main || story.title}
               </button>
             </h4>
-            <p class="byline">{story.byline?.original || story.byline}</p>
+            <p class="byline">
+              {#if typeof story.byline === 'string'}
+                {story.byline}
+              {:else if story.byline?.original}
+                {story.byline.original}
+              {:else}
+                Anonymous
+              {/if}
+            </p>
             <p class="excerpt">{(story.abstract || story.excerpt || '').substring(0, 100)}...</p>
             {#if story._id}
               <button class="comment-button small" on:click={() => openComments(story)}>💬</button>
