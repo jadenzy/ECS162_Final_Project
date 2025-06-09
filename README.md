@@ -25,10 +25,15 @@
   - The comment functions contains: 
     - Post: post will allow nested replies 
     - Delete: Each user can only delete its own commends, but if username == **'moderator'**, then can delete any comments. If delete a comment with replies, then the entier reply tree will be deleted at that level 
-    - Get: get the comments for a artlie based on its own id 
+    - Get: get the comments for a article based on its own id 
     - Patch: Only the **moderator** can do this, which it to make a comment as █
 
-  - There are 3 preset users in config/dex: 
+  - The article functions contains:
+    - Post: publisher can post the new article 
+    - Get: Get articles from New York Times or publisher posted
+    - Patch: 
+    - Delete: Only the **moderator** can delete articles
+  - There are 4 preset users in config/dex: 
     1. username: admin
       - email: admin@hw3.com
       - password = "password"
@@ -41,6 +46,10 @@
     3. username: user
       - email: user@hw3.com
       - password = "upassword"
+
+    4. username: publisher
+      - email: publisher@hw3.com
+      - password = "password"
       
 ## Frontend Structure
 

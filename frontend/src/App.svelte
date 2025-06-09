@@ -14,6 +14,9 @@
   let newCommentText = '';
   let user = null;
   let currentSection = 'Local';
+  let articlePanelOpen = false;
+  let selectedFullArticle = null;
+  let imageInput;
 
   let fallbackData = {
     leadStory: {
@@ -52,6 +55,16 @@
     commentPanelOpen = false;
     selectedArticle = null;
     comments = [];
+  }
+
+  async function openArticlePanel(article) {
+    selectedFullArticle = article;
+    articlePanelOpen = true;
+  }
+
+  function closeArticlePanel() {
+    articlePanelOpen = false;
+    selectedFullArticle = null;
   }
 
   async function openComments(article) {
@@ -128,7 +141,11 @@
     
     try {
       const result = await fetchArticles(section);
-      articles = result.articles;
+      if (user?.name === 'moderator' || user?.name === 'publisher') {
+        articles = result.articles;
+      } else {
+        articles = result.articles.filter(a => a.approved === true);
+      }
       fetchError = result.fetchError;
     } catch (e) {
       console.error('Failed to load section:', e);
@@ -159,9 +176,30 @@
     popUpOpen = false; 
   }
 
+  function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    const isDark = document.body.classList.contains('dark');
+    localStorage.setItem('darkMode', isDark ? 'true' : 'false');
+  }
+
+  // change file format to binary
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+  }
+
   async function submitArticle() {
     errorMsg = '';
     successMsg = '';
+
+    let multimediaData = null;
+    if (imageInput.files.length > 0) {
+      multimediaData = await fileToBase64(imageInput.files[0]);
+    }
 
     try {
       const response = await fetch('/api/articles', {
@@ -173,7 +211,8 @@
           headline,
           abstract,
           section_name,
-          body
+          body,
+          multimedia: multimediaData
         })
       });
 
@@ -185,8 +224,22 @@
 
       successMsg = 'Article successfully submitted!';
       headline = abstract = section_name = body = '';
+      if (imageInput) imageInput.value = '';
     } catch (err) {
       errorMsg = err.message;
+    }
+  }
+
+  let unapprovedArticles = [];
+  async function fetchUnapprovedArticles() {
+    try {
+      const res = await fetch('/api/articles/pending');
+      if (res.ok) {
+        const data = await res.json();
+        unapprovedArticles = data.articles;
+      }
+    } catch (e) {
+      console.error('Failed to fetch unapproved articles:', e);
     }
   }
 
@@ -207,6 +260,24 @@
     }
   }
 
+  async function approveArticle(articleId) {
+    try {
+      const res = await fetch(`/api/article/approve`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ article_id: articleId }),
+      });
+      if (res.ok) {
+        await fetchUnapprovedArticles();
+        await loadSection(currentSection);
+      } else {
+        console.error('Failed to approve article');
+      }
+    } catch (e) {
+      console.error('Error approving article:', e);
+    }
+  }
+
 
   onMount(async () => {
     today = new Date().toLocaleDateString('en-US', {
@@ -216,11 +287,21 @@
       day: 'numeric',
     });
 
+    const savedMode = localStorage.getItem('darkMode');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (savedMode === 'true' || (savedMode === null && prefersDark)) {
+      document.body.classList.add('dark');
+    }
+
     try {
       const res = await fetch('/api/user', { credentials: 'include' });
       user = await res.json();
     } catch (e) {
       user = null;
+    }
+
+    if (user?.name === 'moderator') {
+      await fetchUnapprovedArticles();
     }
 
     await loadSection('Local');
@@ -245,7 +326,11 @@
       {:else}
         <button class="login-btn" on:click={handleLogin}>Login</button>
       {/if}
+      <button class="dark-toggle" on:click={toggleDarkMode}>
+        🌓
+      </button>
     </div>
+    
     <button class="hamburger {menuOpen ? 'open' : ''}" on:click={toggleMenu}>☰</button>
   </div>
   
@@ -295,6 +380,11 @@
         <textarea id="body" bind:value={body} placeholder="Your Article Here..." required></textarea>
       </div>
 
+      <div class="imageInput">
+        <div class="article-image">Upload your Image</div>
+        <input type="file" id="image" bind:this={imageInput}/>
+      </div>
+
       <div class="submitArticle">
         <button type="submit">Submit Article</button>
       </div>
@@ -308,7 +398,6 @@
     {/if}
   </div>
 {/if}
-
 
 <nav class="nav {menuOpen ? 'open' : ''}">
   <div class="nav-container">
@@ -333,22 +422,38 @@
     <p>Loading latest news...</p>
   </div>
 {:else}
-  <div class="container {commentPanelOpen ? 'blurred' : ''}">
+  <div class="container {commentPanelOpen || articlePanelOpen ? 'blurred' : ''}">
     <main class="main-content">
       <article class="lead-story">
         {#if leadStory.multimedia}
-          <img src={leadStory.multimedia.url || leadStory.multimedia.default?.url} alt="Lead story image" class="lead-image" />
+          {#if typeof leadStory.multimedia === 'string'}
+            <img src={leadStory.multimedia} alt="Article image" class="story-image"/>
+          {:else}
+            <img src={leadStory.multimedia.url || leadStory.multimedia.default?.url} alt="Lead story image" class="lead-image" />
+          {/if}
         {/if}
         <h1>
-          <a href={leadStory.web_url} target="_blank" rel="noopener noreferrer">
+          <!-- Updated: Made headline clickable to open article panel -->
+          <button class="article-link" on:click={() => openArticlePanel(leadStory)}>
             {leadStory.headline?.main || leadStory.title}
-          </a>
+          </button>
         </h1>
         {#if leadStory.subtitle}
           <p class="subtitle">{leadStory.subtitle}</p>
         {/if}
-        <p class="byline">{leadStory.byline?.original || leadStory.byline}</p>
+        <p class="byline">
+          {#if typeof leadStory.byline === 'string'}
+            {leadStory.byline}
+          {:else if leadStory.byline?.original}
+            {leadStory.byline.original}
+          {:else}
+            Anonymous        
+          {/if}
+        </p>
         <p class="excerpt">{leadStory.abstract || leadStory.excerpt}</p>
+        {#if leadStory.approved === false}
+          <span class="pending-label">⏳ Pending</span>
+        {/if}
         {#if leadStory._id}
           <button class="comment-button" on:click={() => openComments(leadStory)}>💬 Comment</button>
         {/if}
@@ -361,15 +466,31 @@
         {#each secondaryStories as story}
           <article class="story">
             {#if story.multimedia}
-              <img src={story.multimedia.url || story.multimedia.default?.url} alt="Article image" class="story-image" />
+              {#if typeof story.multimedia === 'string'}
+                <img src={story.multimedia} alt="Article image" class="story-image"/>
+              {:else}
+                <img src={story.multimedia.url || story.multimedia.default?.url} alt="Article image" class="story-image" />
+              {/if}
             {/if}
             <h2>
-              <a href={story.web_url} target="_blank" rel="noopener noreferrer">
+              <!-- Updated: Made headline clickable to open article panel -->
+              <button class="article-link" on:click={() => openArticlePanel(story)}>
                 {story.headline?.main || story.title}
-              </a>
+              </button>
             </h2>
-            <p class="byline">{story.byline?.original || story.byline}</p>
+            <p class="byline">
+              {#if typeof story.byline === 'string'}
+                {story.byline}
+              {:else if story.byline?.original}
+                {story.byline.original}
+              {:else}
+                Anonymous      
+              {/if}      
+            </p>
             <p class="excerpt">{story.abstract || story.excerpt}</p>
+            {#if story.approved === false}
+              <span class="pending-label">⏳ Pending</span>
+            {/if}
             {#if story._id}
               <button class="comment-button" on:click={() => openComments(story)}>💬 Comment</button>
             {/if}
@@ -385,12 +506,24 @@
           <h3>Opinion</h3>
           <article class="story">
             <h2>
-              <a href={articles[0].web_url} target="_blank" rel="noopener noreferrer">
+              <!-- Updated: Made headline clickable to open article panel -->
+              <button class="article-link" on:click={() => openArticlePanel(articles[0])}>
                 {articles[0].headline?.main || articles[0].title}
-              </a>
+              </button>
             </h2>
-            <p class="byline">{articles[0].byline?.original || articles[0].byline}</p>
+            <p class="byline">
+              {#if typeof articles[0].byline === 'string'}
+                {articles[0].byline}
+              {:else if articles[0].byline?.original}
+                {articles[0].byline.original}
+              {:else}
+                Anonymous
+              {/if}            
+            </p>
             <p class="excerpt">{articles[0].abstract || articles[0].excerpt}</p>
+            {#if article.approved === false}
+              <span class="pending-label">⏳ Pending</span>
+            {/if}
             {#if articles[0]._id}
               <button class="comment-button" on:click={() => openComments(articles[0])}>💬 Comment</button>
             {/if}
@@ -402,17 +535,42 @@
       {/if}
     </main>
 
+    {#if user?.name === 'moderator'}
+      <section class="opinion-section">
+        <h3>Pending Approval</h3>
+        {#each unapprovedArticles as pending}
+          <article class="story">
+            <h2>{pending.headline?.main || pending.title}</h2>
+            <p class="byline">{pending.byline?.original || pending.byline}</p>
+            <p class="excerpt">{pending.abstract?.text || pending.abstract}</p>
+            <button class="comment-button" on:click={() => approveArticle(pending._id)}>✅ Approve</button>
+            <button class="comment-button" on:click={() => deleteArticle(pending._id)}>🗑 Delete</button>
+          </article>
+        {/each}
+      </section>
+    {/if}
+
+
     <aside class="sidebar">
       <section class="sidebar-section">
         <h3>Most Popular</h3>
         {#each sidebarStories as story}
           <article class="sidebar-story">
             <h4>
-              <a href={story.web_url} target="_blank" rel="noopener noreferrer">
+              <!-- Updated: Made headline clickable to open article panel -->
+              <button class="article-link small" on:click={() => openArticlePanel(story)}>
                 {story.headline?.main || story.title}
-              </a>
+              </button>
             </h4>
-            <p class="byline">{story.byline?.original || story.byline}</p>
+            <p class="byline">
+              {#if typeof story.byline === 'string'}
+                {story.byline}
+              {:else if story.byline?.original}
+                {story.byline.original}
+              {:else}
+                Anonymous
+              {/if}
+            </p>
             <p class="excerpt">{(story.abstract || story.excerpt || '').substring(0, 100)}...</p>
             {#if story._id}
               <button class="comment-button small" on:click={() => openComments(story)}>💬</button>
@@ -462,6 +620,67 @@
   </div>
 </footer>
 
+{#if articlePanelOpen && selectedFullArticle}
+  <div class="article-panel">
+    <div class="article-panel-header">
+      <button class="close-panel" on:click={closeArticlePanel}>✖</button>
+      <div class="article-actions">
+        {#if selectedFullArticle._id}
+          <button class="comment-button" on:click={() => openComments(selectedFullArticle)}>💬 Comment</button>
+        {/if}
+        {#if user?.name === 'moderator'}
+          <button class="comment-button" on:click={() => deleteArticle(selectedFullArticle._id)}>🗑 Delete</button>
+        {/if}
+      </div>
+    </div>
+    
+    <div class="article-panel-content">
+      <div class="article-meta">
+        <span class="article-section">{currentSection}</span>
+        <span class="article-date">{today}</span>
+      </div>
+      
+      <h1 class="article-title">{selectedFullArticle.headline?.main || selectedFullArticle.title}</h1>
+      
+      {#if selectedFullArticle.subtitle}
+        <p class="article-subtitle">{selectedFullArticle.subtitle}</p>
+      {/if}
+      
+      <p class="article-byline">{selectedFullArticle.byline?.original || selectedFullArticle.byline}</p>
+      
+      {#if selectedFullArticle.multimedia}
+        <div class="article-image-container">
+          {#if typeof selectedFullArticle.multimedia === 'string'}
+            <img src={selectedFullArticle.multimedia} alt="Article image" class="article-full-image" />
+          {:else}
+            <img 
+              src={selectedFullArticle.multimedia.url || selectedFullArticle.multimedia.default?.url} 
+              alt="Article image" 
+              class="article-full-image" 
+            />
+          {/if}
+          {#if selectedFullArticle.multimedia.caption}
+            <p class="image-caption">{selectedFullArticle.multimedia.caption}</p>
+          {/if}
+        </div>
+      {/if}
+      
+      <div class="article-body">
+        {#if selectedFullArticle.body}
+          <!-- If you have full body content from your API -->
+          {@html selectedFullArticle.body.replace(/\n/g, '<br><br>')}
+        {:else}
+          <!-- Fallback to abstract/excerpt -->
+          <p>{selectedFullArticle.abstract || selectedFullArticle.excerpt}</p>
+          {#if selectedFullArticle.web_url && selectedFullArticle.web_url !== '#'}
+            <p><a href={selectedFullArticle.web_url} target="_blank" rel="noopener noreferrer">Read full article on original source →</a></p>
+          {/if}
+        {/if}
+      </div>
+    </div>
+  </div>
+{/if}
+
 {#if commentPanelOpen}
   <aside class="comment-panel">
     <button class="close-panel" on:click={closeComments}>✖</button>
@@ -496,3 +715,4 @@
 <style>
   @import 'app.css';
 </style>
+

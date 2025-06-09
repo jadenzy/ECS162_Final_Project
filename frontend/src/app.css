@@ -12,8 +12,8 @@
 }
 
 .header {
-  border-bottom: 1px solid #ddd;
-  padding: 15px 0 10px 0;
+  border-bottom: 2px solid #ddd;
+  padding: 20px 0 20px 0;
   background-color: #fff;
   position: sticky;
   top: 0;
@@ -91,7 +91,7 @@
 
 .nav {
   background-color: #fff;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 2px solid #ddd;
   padding: 10px 0;
 }
 
@@ -546,4 +546,375 @@
     gap: 10px;
     text-align: center;
   }
+}
+
+.article-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: white;
+  z-index: 1000;
+  overflow-y: auto;
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.article-panel-header {
+  position: sticky;
+  top: 0;
+  background: white;
+  border-bottom: 1px solid #e5e5e5;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.article-panel-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  line-height: 1.6;
+}
+
+.article-meta {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.article-section {
+  text-transform: uppercase;
+  font-weight: bold;
+  color: #000;
+}
+
+.article-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  color: #000;
+}
+
+.article-subtitle {
+  font-size: 1.25rem;
+  color: #666;
+  margin-bottom: 1rem;
+  font-weight: 300;
+}
+
+.article-byline {
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 2rem;
+  font-style: italic;
+}
+
+.article-image-container {
+  margin: 2rem 0;
+}
+
+.article-full-image {
+  max-width: 600px;    
+  width: 100%;         
+  height: auto;
+  border-radius: 4px;
+  display: block;      
+  margin: 0 auto;      
+}
+
+.image-caption {
+  font-size: 0.875rem;
+  color: #666;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.article-body {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: #333;
+}
+
+.article-body p {
+  margin-bottom: 1.5rem;
+}
+
+.article-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.article-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: color 0.2s ease;
+}
+
+.article-link:hover {
+  color: #0066cc;
+  text-decoration: underline;
+}
+
+.article-link.small {
+  font-size: inherit;
+}
+
+@media (max-width: 768px) {
+  .article-panel-content {
+    padding: 1rem;
+  }
+  
+  .article-title {
+    font-size: 1.875rem;
+  }
+  
+  .article-panel-header {
+    padding: 1rem;
+  }
+  
+  .article-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+body.dark {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+body.dark .header,
+body.dark .nav,
+body.dark .nav ul,
+body.dark .container,
+body.dark .lead-story,
+body.dark .story,
+body.dark .sidebar,
+body.dark .opinion-section,
+body.dark .footer,
+body.dark .comment-panel,
+body.dark .article-panel,
+body.dark .article-panel-header {
+  background-color: #1e1e1e;
+  border-color: #333;
+}
+
+body.dark .logo {
+  color: #fff;
+}
+
+body.dark .date,
+body.dark .byline,
+body.dark .story .excerpt,
+body.dark .lead-story .subtitle,
+body.dark .lead-story .excerpt,
+body.dark .sidebar-story .excerpt,
+body.dark .sidebar-story .byline,
+body.dark .article-meta,
+body.dark .article-subtitle,
+body.dark .article-byline,
+body.dark .image-caption {
+  color: #aaa;
+}
+
+body.dark .nav a {
+  color: #90caf9;
+}
+
+body.dark .nav a:hover,
+body.dark .nav a.active {
+  color: #bbdefb;
+}
+
+body.dark .publisher-badge {
+  background: #90caf9;
+  color: #000;
+}
+
+body.dark .comment-button,
+body.dark .comment-form button,
+body.dark .error-message button {
+  background-color: #90caf9;
+  color: #000;
+}
+
+body.dark .comment-button:hover,
+body.dark .comment-form button:hover,
+body.dark .error-message button:hover {
+  background-color: #64b5f6;
+}
+
+body.dark .login-btn,
+body.dark .login-prompt button {
+  color: #90caf9;
+}
+
+body.dark .article-title,
+body.dark .sidebar-section h3,
+body.dark .lead-story h1,
+body.dark .story h2,
+body.dark .sidebar-story h4,
+body.dark .opinion-section h3,
+body.dark .article-body p,
+body.dark .article-panel-content h1,
+body.dark .article-section,
+  
+body.dark .footer-section h4 {
+  color: #fff;
+}
+
+body.dark .footer-section a {
+  color: #aaa;
+}
+
+body.dark .footer-section a:hover {
+  color: #fff;
+}
+
+body.dark .comment-form textarea {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  border-color: #444;
+}
+
+.dark-toggle {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  color: #326891;
+  transition: color 0.3s;
+}
+
+body.dark .dark-toggle {
+  color: #bbdefb;
+}
+
+.PopUp {
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+width: 90%;
+max-width: 700px;
+background: white;
+border-radius: 8px;
+box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+padding: 2rem;
+z-index: 999;
+max-height: 90vh;
+overflow-y: auto;
+}
+
+.ASP {
+font-size: 1.8rem;
+font-weight: bold;
+margin-bottom: 1.5rem;
+}
+.PopUpHeader {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 1rem;
+}
+
+.close-popup {
+background: transparent;
+border: none;
+font-size: 1.5rem;
+cursor: pointer;
+margin-left: auto;
+}
+
+.hlineInput input,
+.bodyInput textarea,
+.hlineInput select {
+width: 100%;
+padding: 0.8rem;
+border: 1px solid #ccc;
+border-radius: 4px;
+font-size: 1rem;
+font-family: inherit; 
+ margin-bottom: 1rem;
+box-sizing: border-box;
+}
+.bodyInput textarea {
+min-height: 200px; 
+}
+
+.upload-area {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin: 1rem 0;
+}
+
+.file-upload-box {
+border: 2px dashed #ccc;
+padding: 1rem;
+text-align: center;
+width: 70%;
+border-radius: 4px;
+font-size: 0.9rem;
+color: #555;
+}
+
+.submitArticle {
+display: flex;
+justify-content: flex-end;
+}
+
+.submitArticle button {
+background-color: #333;
+color: white;
+padding: 0.8rem 1.5rem;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+position: relative;
+font-weight: bold;
+}
+
+.submitArticle button::after {
+content: "→";
+margin-left: 0.5rem;
+}
+
+.article-image {
+  border-bottom:1px solid #ccc;
+  padding-bottom:5px;
+  margin-bottom:10px;
+}
+
+.pending-label {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 2px 6px;
+  font-size: 0.8rem;
+  background-color: orange;
+  color: white;
+  border-radius: 4px;
+  font-weight: bold;
 }
