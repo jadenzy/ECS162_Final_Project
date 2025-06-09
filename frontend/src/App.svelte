@@ -451,6 +451,9 @@
           {/if}
         </p>
         <p class="excerpt">{leadStory.abstract || leadStory.excerpt}</p>
+        {#if leadStory.approved === false}
+          <span class="pending-label">⏳ Pending</span>
+        {/if}
         {#if leadStory._id}
           <button class="comment-button" on:click={() => openComments(leadStory)}>💬 Comment</button>
         {/if}
@@ -485,6 +488,9 @@
               {/if}      
             </p>
             <p class="excerpt">{story.abstract || story.excerpt}</p>
+            {#if story.approved === false}
+              <span class="pending-label">⏳ Pending</span>
+            {/if}
             {#if story._id}
               <button class="comment-button" on:click={() => openComments(story)}>💬 Comment</button>
             {/if}
@@ -515,6 +521,9 @@
               {/if}            
             </p>
             <p class="excerpt">{articles[0].abstract || articles[0].excerpt}</p>
+            {#if article.approved === false}
+              <span class="pending-label">⏳ Pending</span>
+            {/if}
             {#if articles[0]._id}
               <button class="comment-button" on:click={() => openComments(articles[0])}>💬 Comment</button>
             {/if}
