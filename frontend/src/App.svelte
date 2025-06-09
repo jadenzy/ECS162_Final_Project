@@ -381,7 +381,8 @@
       </div>
 
       <div class="imageInput">
-        <input type="file" id="image" bind:this={imageInput} />
+        <div class="article-image">Upload your Image</div>
+        <input type="file" id="image" bind:this={imageInput}/>
       </div>
 
       <div class="submitArticle">

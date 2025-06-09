@@ -901,3 +901,9 @@ font-weight: bold;
 content: "→";
 margin-left: 0.5rem;
 }
+
+.article-image {
+  border-bottom:1px solid #ccc;
+  padding-bottom:5px;
+  margin-bottom:10px;
+}
