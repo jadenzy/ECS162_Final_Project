@@ -1,6 +1,16 @@
 ## ECS162 Final Project - Group 13
 
-### Github link: https://github.com/jadenzy/ECS162_HW2.git
+### Group members:
+  - JADEN YANG, University of California Davis, USA
+  - CHEN-YU FAN, University of California Davis, USA
+  - YUNFEI QUAN, University of California Davis, USA
+  - NATHAN CASTELLON, University of California Davis, USA
+  - HYUNHO SONG, University of California Davis, USA
+  - YU-FAN CHEN, University of California Davis, USA
+
+### Final Report: [Click to view the PDF file](ECS_162_final.pdf)
+
+### Demo: [Click to view the demo](https://drive.google.com/file/d/106_byUtdIadEy_-PQdBztpBUo37dORDm/view?resourcekey)
 
 ### Running Instructions
 
@@ -9,11 +19,6 @@
   docker-compose -f docker-compose.dev.yml up --build 
   http://localhost:5173
   ```
-- **Test backend:**  
-  ```bash
-  cd backend && pytest
-  ```
----
 
 ## Important info: 
   - The login functions works as the following: 
@@ -29,17 +34,16 @@
     - Patch: Only the **moderator** can do this, which it to make a comment as █
 
   - The article functions contains:
-    - Post: publisher can post the new article 
+    - Post: **Publisher** can post the new article, but need moderator's permission to approve 
     - Get: Get articles from New York Times or publisher posted
-    - Patch: 
     - Delete: Only the **moderator** can delete articles
+
   - There are 4 preset users in config/dex: 
     1. username: admin
       - email: admin@hw3.com
       - password = "password"
-      
      
-    2. username: moderator , **moderator** is set as this one 
+    2. username: moderator, **moderator** is set as this one 
       - email: moderator@hw3.com
       - password = "mpassword" 
      
@@ -55,31 +59,56 @@
 
 ### `/src`
 - **`app.css`**
-  - Carries over CSS files from Homework 2
+  - Redesign the entire page UI 
 
 - **`App.svelte`**
-  - Add comments 
-  - Add login 
-  - Add heading functions 
+  - Contains the all the frontend work 
+  - Redesign the entire view, split the articles into three different sections based on the their length
+  - Add light and dark mode
+  - Redesign the header and footer
+  - Add the publisher publisher article panel and button
+  - Add the moderator approving panel for onhold articles
+  - Add the displaying full article when onclick
+  - Redesign the view of the comment sections and buttons
 
 - **`CommentItem.svelte`**
   - The main components to render the comments for each articles 
-  - Allow nested replies, but if deleting 
+  - Allow nested replies, but if deleting the parent comment, all the child comments will be deleteed 
 
 ## Backend Structure
 
 ### `app.py`
   - Add all the needed functions for MangoDB 
-  - Add login functions by using dex 
-  - Add GET, POST, DELETE, PATCH apis for the comments 
+  - Login functions by using dex 
+  - GET, POST, DELETE, PATCH apis for the comments 
   - Everything will save to the database including the articles and their corresponding articles 
+  - Publisher POST article 
+  - Moderator DELETE article and APPROVE article 
+  - Fetch Approve articles for all users 
+  - Get pending articles for moderator
+  - Fetch Unapproved articles for publisher and moderator (pending will display)
+
   - Comment is an object contains    
     - "article_id"
     - "text"
     - "user": the user name 
     - "redacted_text": if the moderator do it or not 
     - "parent_id": if it contains a parent reply 
-  - Move the fetch articles to flask instead of frontend 
+
+  - Article is an object contains 
+    - "headline": the headline 
+    - "abstract": the abstract 
+    - "section_name": the section that the article belong to 
+    - "body": the main content 
+    - "byline": author of the article 
+    - "multimedia": images of the article 
+    - "approved": approve by moderator or not, all the NYT articles are default approved 
+
+    - For publishing and fetching articles, the logic is as following: 
+      - For the publishing: publisher publish a new article -> on hold for the moderator to approve -> moderator approve -> everyone can see it; if moderator not approve, it will be deleted. 
+      - For fetching articles: include both fetch unapproved articles (article['approve'] = False) and fetch approve articles (article['approve'] = True), NYT articles are always article['approve'] = True. 
+      - Fetch unapproved articles only for publisher and moderator, fetch approve articles for everyone. 
+  
 
 
     
