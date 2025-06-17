@@ -108,8 +108,9 @@
       - For the publishing: publisher publish a new article -> on hold for the moderator to approve -> moderator approve -> everyone can see it; if moderator not approve, it will be deleted. 
       - For fetching articles: include both fetch unapproved articles (article['approve'] = False) and fetch approve articles (article['approve'] = True), NYT articles are always article['approve'] = True. 
       - Fetch unapproved articles only for publisher and moderator, fetch approve articles for everyone. 
-  
 
+### test_app.py 
+  - Testing the app.py, just run `pytest` in the backend file to run all the tests 
 
     
 
